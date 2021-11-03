@@ -8,23 +8,26 @@ function init() {
         })
         auth.attachClickHandler(document.getElementById("googleBtn"), {},
             async (googleUser) => {
-                var token =await googleUser.getAuthResponse().access_token
+                var token = await googleUser.getAuthResponse().access_token
                 var xml = new XMLHttpRequest()
                 var url = "https://www.google.com/m8/feeds/contacts/default/full?alt=json&access_token=" + token + "&max-results=500&v=3.0"
-                xml.open("GET",url,true)
+                xml.open("GET", url, true)
                 xml.send()
-                xml.onload=()=>{
-                    var contacts = JSON.parse(xml.response).feed.entry
-                    var temp = []
-                    for (const iterator of contacts) {
-                        if("gd$email" in iterator){
-                            var email = iterator["gd$email"][0].address
-                            var name = (iterator["title"]["$t"])?iterator["title"]["$t"] : email
-                            temp.push({name,email})
-                            parseData(temp)
-                        } 
+                try {
+                    xml.onload = () => {
+                        var contacts = JSON.parse(xml.response).feed.entry
+                        var temp = []
+                        for (const iterator of contacts) {
+                            if ("gd$email" in iterator) {
+                                var email = iterator["gd$email"][0].address
+                                var name = (iterator["title"]["$t"]) ? iterator["title"]["$t"] : email
+                                temp.push({ name, email })
+                                parseData(temp)
+                            }
+                        }
                     }
-                }
+                    xml.onerror = () => alert('Error: refresh page ')
+                } catch (e) { alert('Error: refresh page') }
             })
     })
 }
