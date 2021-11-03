@@ -64,16 +64,16 @@
     function parseData(commingData) {
         var obj = {}
         for (var el of commingData) {
-            if(el.name[0]){
+            if (el.name[0]) {
                 var literal = el.name[0].toUpperCase()
             }
             else continue
             obj[literal] = (obj[literal]?.length) ? [...obj[literal], el] : [el]
         }
         var str = ''
-        for (let v=0; v<26; v++) {
-            let literal = String.fromCharCode(v+65)
-            if(!obj[literal]) continue
+        for (let v = 0; v < 26; v++) {
+            let literal = String.fromCharCode(v + 65)
+            if (!obj[literal]) continue
             str += `<div class="ml-10 font-extrabold my-2 text-gray-400 letter">${literal}</div>`
             for (let i of obj[literal]) {
                 str += `
@@ -87,7 +87,7 @@
                     `
             }
         }
-        
+
         document.querySelectorAll("#withCSV, #withoutCSV, #outlookCSV").forEach(el => el.hidden = true)
         document.getElementById("contacts").hidden = false
         document.getElementById("extendContacts").innerHTML = str
@@ -139,25 +139,37 @@
             var file = ev.target.files[0]
             var reader = new FileReader()
             reader.onload = function (ev) {
-                let data = ev.target.result
-                let temp = []
-                temp = data.split("\n")
                 let another = []
-                for(var el of temp){
-                   let [name,email] = el.split(",")
-                   another.push({name,email})     
+                var arr = reader.result.split("\n")
+                let name_index = 0
+                let email_index = 0
+                let first_row = arr[0].split(",")
+                for (let el of first_row) {
+                    if (el.toLowerCase().includes("first_name") || /^name$/.test(el)) {
+                        name_index = first_row.indexOf(el)
+                    }
+                    if (el.toLowerCase().includes("email")) {
+                        email_index = first_row.indexOf(el)
+                    }
                 }
-                another.splice(0,1)
+                arr.splice(0, 1)
+                for (let el of arr) {
+                    let temp = el.split(",")
+                    another.push({
+                        name: temp[name_index],
+                        email: temp[email_index]
+                    })
+                }
                 parseData(another)
             }
             reader.readAsText(file)
         }
     }
-    function backOutlook(){
+    function backOutlook() {
         document.getElementById("outlookCSV").hidden = true
         document.getElementById("withoutCSV").hidden = false
     }
-    function openOutlookCSV(){
+    function openOutlookCSV() {
         document.getElementById("outlookCSV").hidden = false
         document.getElementById("withoutCSV").hidden = true
     }
