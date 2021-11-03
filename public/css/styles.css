@@ -1,0 +1,16 @@
+.shader {
+    background-color: #00000091;
+}
+.checkbox{
+    width: 20px;
+    height: 20px; 
+    user-select: none;   
+}
+#extendContacts{
+    height: 20rem;
+    overflow-y: scroll;
+}
+.getBtn{
+    margin-right: 25%;
+    margin-top: -3rem;
+}

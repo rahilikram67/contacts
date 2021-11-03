@@ -1,0 +1,167 @@
+<script>
+    var data = []
+    function add(ev) {
+        var els = ev.target.parentElement.children
+        if (ev.target.checked) {
+            data.push({
+                name: els[1].innerHTML,
+                email: els[2].innerHTML
+            })
+        }
+        else {
+            var index = data.findIndex((val) => val.name == els[1].innerHTML)
+            data.splice(index, 1)
+        }
+        hideShowReviewBtn()
+    }
+
+    function hideShowReviewBtn() {
+        var review = document.getElementById('review')
+        var getContacts = document.getElementById('getContacts')
+        if (data.length) {
+            review.hidden = false
+            getContacts.hidden = false
+            getContacts.innerHTML = `Get ${data.length} Contacts`
+
+        }
+        else {
+            review.hidden = true
+            getContacts.hidden = true
+        }
+    }
+    function selectAll(ev) {
+        data = []
+        if (ev.target.innerHTML.includes("Select")) {
+            document.querySelectorAll('.checkbox').forEach(el => {
+                el.checked = true
+                data.push({
+                    name: el.parentElement.children[1].innerHTML,
+                    email: el.parentElement.children[2].innerHTML
+                })
+            })
+            ev.target.innerHTML = "Deselect All"
+        }
+        else {
+            document.querySelectorAll('.checkbox').forEach(el => el.checked = false)
+            ev.target.innerHTML = "Select All"
+            data = []
+        }
+        hideShowReviewBtn()
+    }
+    function handleCSV() {
+        document.getElementById("withCSV").hidden = false
+        document.getElementById("withoutCSV").hidden = true
+    }
+    function roleBackCSV() {
+        document.getElementById("withCSV").hidden = true
+        document.getElementById("withoutCSV").hidden = false
+    }
+    function roleBackContacts() {
+        document.getElementById("withoutCSV").hidden = false
+        document.getElementById("contacts").hidden = true
+        document.getElementById("getContacts").hidden = true
+    }
+    function parseData(commingData) {
+        var obj = {}
+        for (var el of commingData) {
+            if(el.name[0]){
+                var literal = el.name[0].toUpperCase()
+            }
+            else continue
+            obj[literal] = (obj[literal]?.length) ? [...obj[literal], el] : [el]
+        }
+        var str = ''
+        for (let v=0; v<26; v++) {
+            let literal = String.fromCharCode(v+65)
+            if(!obj[literal]) continue
+            str += `<div class="ml-10 font-extrabold my-2 text-gray-400 letter">${literal}</div>`
+            for (let i of obj[literal]) {
+                str += `
+                    <div class="w-12/12 mx-10 border border-gray-300 bg-white letter-body">
+                        <div class="py-2">
+                            <input onclick="add(event)" type="checkbox" class="checkbox mt-0.5 ml-2 float-left">
+                            <span class="text-base ml-14">${i.name}</span>
+                            <span class="text-base float-right mr-2">${i.email}</span>
+                        </div>
+                    </div>
+                    `
+            }
+        }
+        
+        document.querySelectorAll("#withCSV, #withoutCSV, #outlookCSV").forEach(el => el.hidden = true)
+        document.getElementById("contacts").hidden = false
+        document.getElementById("extendContacts").innerHTML = str
+    }
+    function openAddr() {
+        document.getElementById('addressBook').hidden = false
+        document.getElementById('withoutCSV').hidden = false
+    }
+    function cross() {
+        document.querySelectorAll("#withoutCSV, #withCSV, #contacts, #addressBook, #getContacts, #outlookCSV").forEach(el => el.hidden = true)
+    }
+    function review(ev) {
+        if (ev.target.innerHTML.includes("Review")) {
+            document.querySelectorAll(".checkbox").forEach(el => {
+                if (!el.checked) {
+                    el.parentElement.hidden = true
+                }
+                else el.hidden = true
+            })
+            document.querySelectorAll(".letter").forEach(el => el.hidden = true)
+            ev.target.innerHTML = "Back To List"
+            document.getElementById("selectAll").style.visibility = "hidden"
+        }
+        else {
+            document.querySelectorAll(".checkbox").forEach(el => {
+                el.parentElement.hidden = false
+                el.hidden = false
+            })
+            document.querySelectorAll(".letter").forEach(el => el.hidden = false)
+            ev.target.innerHTML = "Review"
+            document.getElementById("selectAll").style.visibility = "visible"
+        }
+    }
+    function addContacts() {
+        var str = JSON.stringify(data, null, 2)
+        navigator.clipboard.writeText(str)
+        alert("Copied to clipboard")
+        document.getElementById("output").innerHTML = str
+        document.getElementById("withoutCSV").hidden = false
+        document.getElementById("selectAll").innerHTML = "Select All"
+        document.querySelectorAll("#contacts, #review, #addressBook, #getContacts").forEach(el => el.hidden = true)
+    }
+    function uploadCSV() {
+        var input = document.createElement("input")
+        input.type = "file"
+        input.accept = ".csv"
+        input.click()
+        input.onchange = function (ev) {
+            var file = ev.target.files[0]
+            var reader = new FileReader()
+            reader.onload = function (ev) {
+                let data = ev.target.result
+                let temp = []
+                temp = data.split("\n")
+                let another = []
+                for(var el of temp){
+                   let [name,email] = el.split(",")
+                   another.push({name,email})     
+                }
+                another.splice(0,1)
+                parseData(another)
+            }
+            reader.readAsText(file)
+        }
+    }
+    function backOutlook(){
+        document.getElementById("outlookCSV").hidden = true
+        document.getElementById("withoutCSV").hidden = false
+    }
+    function openOutlookCSV(){
+        document.getElementById("outlookCSV").hidden = false
+        document.getElementById("withoutCSV").hidden = true
+    }
+</script>
+</body>
+
+</html>
